@@ -1,14 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { StarIcon, PlayIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
-import { Modal } from "@/app/components/ui/Modal";
-import { Button } from "@/app/components/ui/Button";
-import { Movie, WatchProviderResult } from "@/app/lib/types";
-import { getWatchProviders } from "@/app/lib/tmdb";
-import { getPosterUrl, getProviderLogoUrl } from "@/app/lib/image-helpers";
+import { WatchlistButton } from '@/app/components/WatchlistButton';
+import { Button } from '@/app/components/ui/Button';
+import { Modal } from '@/app/components/ui/Modal';
+import { getPosterUrl, getProviderLogoUrl } from '@/app/lib/image-helpers';
+import { getWatchProviders } from '@/app/lib/tmdb';
+import { Movie, WatchProviderResult } from '@/app/lib/types';
+import {
+  ArrowTopRightOnSquareIcon,
+  PlayIcon,
+  ShareIcon,
+  StarIcon,
+} from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface MovieCardProps {
   movie: Movie | null;
@@ -18,18 +24,31 @@ interface MovieCardProps {
   onSortAgain: () => void;
 }
 
-export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: MovieCardProps) {
-  const [watchProviders, setWatchProviders] = useState<WatchProviderResult | null>(null);
+export function MovieCard({
+  movie,
+  isOpen,
+  onClose,
+  onReroll,
+  onSortAgain,
+}: MovieCardProps) {
+  const [watchProviders, setWatchProviders] =
+    useState<WatchProviderResult | null>(null);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
+  const [showShareFeedback, setShowShareFeedback] = useState(false);
 
   useEffect(() => {
     if (movie) {
-      setShowFullSynopsis(false);
-      setIsSorting(false);
       getWatchProviders(movie.id).then(setWatchProviders);
+    } else {
+      setWatchProviders(null);
     }
   }, [movie]);
+
+  useEffect(() => {
+    setShowFullSynopsis(false);
+    setIsSorting(false);
+  }, [movie?.id]);
 
   if (!movie || isSorting) {
     return (
@@ -39,7 +58,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
             <motion.div
               className="w-16 h-16 border-4 border-rose-600 border-t-transparent rounded-full mx-auto mb-4"
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
             <p className="text-zinc-400 text-sm">Buscando novo filme...</p>
           </div>
@@ -48,8 +67,10 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
     );
   }
 
-  const posterUrl = getPosterUrl(movie.poster_path, "w500");
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : "N/A";
+  const posterUrl = getPosterUrl(movie.poster_path, 'w500');
+  const year = movie.release_date
+    ? new Date(movie.release_date).getFullYear()
+    : 'N/A';
   const rating = movie.vote_average.toFixed(1);
 
   const formatRuntime = (minutes: number | undefined) => {
@@ -64,9 +85,10 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
 
   const runtime = formatRuntime(movie.runtime);
 
-  const truncatedSynopsis = movie.overview.length > 200 && !showFullSynopsis
-    ? movie.overview.slice(0, 200) + "..."
-    : movie.overview;
+  const truncatedSynopsis =
+    movie.overview.length > 200 && !showFullSynopsis
+      ? movie.overview.slice(0, 200) + '...'
+      : movie.overview;
 
   const handleReroll = async () => {
     setIsSorting(true);
@@ -75,12 +97,28 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
     setIsSorting(false);
   };
 
+  const handleShare = async () => {
+    if (!movie) return;
+
+    const url = `${window.location.origin}?movie=${movie.id}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowShareFeedback(true);
+      setTimeout(() => setShowShareFeedback(false), 2500);
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+    }
+  };
+
   const trailerSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-    `${movie.title} ${year} trailer`
+    `${movie.title} ${year} trailer`,
   )}`;
 
   const tmdbUrl = `https://www.themoviedb.org/movie/${movie.id}`;
-  const imdbUrl = movie.imdb_id ? `https://www.imdb.com/title/${movie.imdb_id}` : null;
+  const imdbUrl = movie.imdb_id
+    ? `https://www.imdb.com/title/${movie.imdb_id}`
+    : null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="sm:max-w-5xl">
@@ -126,7 +164,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
             )}
             {movie.tagline && (
               <p className="text-rose-500 text-xs sm:text-sm italic mb-2 sm:mb-3">
-                "{movie.tagline}"
+                &ldquo;{movie.tagline}&rdquo;
               </p>
             )}
             <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-zinc-400 flex-wrap">
@@ -161,7 +199,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
 
           <div className="text-center md:text-left">
             <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
-              {truncatedSynopsis || "Sinopse não disponível."}
+              {truncatedSynopsis || 'Sinopse não disponível.'}
             </p>
             {!showFullSynopsis && truncatedSynopsis !== movie.overview && (
               <button
@@ -173,65 +211,133 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
             )}
           </div>
 
-          {watchProviders && watchProviders.flatrate && watchProviders.flatrate.length > 0 && (
-            <div className="text-center md:text-left">
-              <p className="text-xs sm:text-sm text-zinc-400 mb-2">Disponível em:</p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                {watchProviders.flatrate.map((provider) => (
-                  <div
-                    key={provider.provider_id}
-                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-zinc-800"
-                    title={provider.provider_name}
-                  >
-                    <Image
-                      src={getProviderLogoUrl(provider.logo_path)}
-                      alt={provider.provider_name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 40px, 48px"
-                    />
-                  </div>
-                ))}
+          {watchProviders &&
+            watchProviders.flatrate &&
+            watchProviders.flatrate.length > 0 && (
+              <div className="text-center md:text-left">
+                <p className="text-xs sm:text-sm text-zinc-400 mb-2">
+                  Disponível em:
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  {watchProviders.flatrate.map((provider) => (
+                    <div
+                      key={provider.provider_id}
+                      className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-zinc-800"
+                      title={provider.provider_name}
+                    >
+                      <Image
+                        src={getProviderLogoUrl(provider.logo_path)}
+                        alt={provider.provider_name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 40px, 48px"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex flex-col gap-2 sm:gap-3 mt-auto pt-4 sm:pt-6">
-            <Button
-              variant="primary"
-              onClick={handleReroll}
-              className="w-full text-base sm:text-lg py-3 sm:py-4"
-            >
-              Sortear Outro
-            </Button>
-            <div className={`grid gap-2 ${imdbUrl ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <div className="flex flex-col gap-3 sm:gap-4 mt-auto pt-4 sm:pt-6">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <Button
+                variant="primary"
+                onClick={handleReroll}
+                isLoading={isSorting}
+                className="text-sm sm:text-base py-3 sm:py-3.5"
+              >
+                {isSorting ? 'Buscando...' : 'Sortear Outro'}
+              </Button>
+              <WatchlistButton
+                movie={movie}
+                variant="secondary"
+                className="w-full text-sm sm:text-base py-3 sm:py-3.5"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               <Button
                 variant="secondary"
-                onClick={() => window.open(trailerSearchUrl, "_blank")}
-                className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
+                onClick={() => window.open(trailerSearchUrl, '_blank')}
+                className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3"
               >
                 <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Trailer</span>
-                <span className="xs:hidden">Play</span>
+                <span>Trailer</span>
               </Button>
               {imdbUrl && (
                 <Button
                   variant="link"
-                  onClick={() => window.open(imdbUrl, "_blank")}
-                  className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
+                  onClick={() => window.open(imdbUrl, '_blank')}
+                  className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3"
                 >
                   <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  IMDb
+                  <span>IMDb</span>
                 </Button>
               )}
               <Button
                 variant="link"
-                onClick={() => window.open(tmdbUrl, "_blank")}
-                className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
+                onClick={() => window.open(tmdbUrl, '_blank')}
+                className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3"
               >
                 <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                TMDB
+                <span>TMDB</span>
               </Button>
+              <div className="relative">
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                  animate={showShareFeedback ? { scale: [1, 1.05, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                  className="h-full"
+                >
+                  <Button
+                    variant="secondary"
+                    onClick={handleShare}
+                    className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3 w-full h-full"
+                  >
+                    <motion.div
+                      animate={
+                        showShareFeedback
+                          ? {
+                              rotate: [0, -10, 10, -10, 0],
+                              scale: [1, 1.2, 1],
+                            }
+                          : {}
+                      }
+                      transition={{ duration: 0.5 }}
+                    >
+                      <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </motion.div>
+                    <span className="hidden sm:inline">Compartilhar</span>
+                    <span className="sm:hidden">Share</span>
+                  </Button>
+                </motion.div>
+                {showShareFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                    className="absolute -top-14 left-1/2 -translate-x-1/2 bg-zinc-800 text-zinc-50 px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-xl border border-zinc-700 z-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4 text-green-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span className="font-medium">Link copiado!</span>
+                    </div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-zinc-800 border-r border-b border-zinc-700" />
+                  </motion.div>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -239,4 +345,3 @@ export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: Mov
     </Modal>
   );
 }
-

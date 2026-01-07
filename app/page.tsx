@@ -1,25 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FilterBar } from "@/app/components/FilterBar";
 import { Roulette } from "@/app/components/Roulette";
 import { MovieCard } from "@/app/components/MovieCard";
 import { Movie, MovieFilters } from "@/app/lib/types";
+import { getMovieById } from "@/app/lib/tmdb";
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [filters, setFilters] = useState<MovieFilters>({});
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [rerollTrigger, setRerollTrigger] = useState(0);
+  const [isLoadingMovie, setIsLoadingMovie] = useState(false);
+
+  useEffect(() => {
+    const movieId = searchParams.get("movie");
+    if (movieId) {
+      loadMovieById(parseInt(movieId));
+    }
+  }, [searchParams]);
+
+  const loadMovieById = async (movieId: number) => {
+    setIsLoadingMovie(true);
+    try {
+      const movie = await getMovieById(movieId);
+      if (movie) {
+        setSelectedMovie(movie);
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error loading movie by ID:", error);
+    } finally {
+      setIsLoadingMovie(false);
+    }
+  };
+
+  const updateUrl = (movieId: number | null) => {
+    if (movieId) {
+      router.push(`?movie=${movieId}`, { scroll: false });
+    } else {
+      router.push("/", { scroll: false });
+    }
+  };
 
   const handleMovieSelected = (movie: Movie) => {
     setSelectedMovie(movie);
     setIsModalOpen(true);
+    updateUrl(movie.id);
+    window.dispatchEvent(new Event("watchlist-updated"));
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    updateUrl(null);
   };
 
   const handleReroll = () => {
@@ -33,6 +70,8 @@ export default function Home() {
       if (movie) {
         setSelectedMovie(movie);
         setIsModalOpen(true);
+        updateUrl(movie.id);
+        window.dispatchEvent(new Event("watchlist-updated"));
       }
     } catch (error) {
       console.error("Error sorting again:", error);
@@ -112,5 +151,20 @@ export default function Home() {
         onSortAgain={handleSortAgain}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-rose-600 border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
+          <p className="text-zinc-400 text-sm">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

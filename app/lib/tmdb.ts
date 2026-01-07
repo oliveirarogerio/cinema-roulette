@@ -148,6 +148,44 @@ export async function getRandomMovie(filters: MovieFilters = {}): Promise<Movie 
   }
 }
 
+export async function getMovieById(movieId: number): Promise<Movie | null> {
+  try {
+    const detailedMovie = await fetchTMDB<TMDBMovieResponse>(`/movie/${movieId}`);
+
+    const hasImdbId = detailedMovie.imdb_id && detailedMovie.imdb_id.trim().length > 0;
+    const hasPoster = detailedMovie.poster_path && detailedMovie.poster_path.trim().length > 0;
+    const hasOverview = detailedMovie.overview && detailedMovie.overview.trim().length > 0;
+
+    if (!hasImdbId || !hasPoster || !hasOverview) {
+      return null;
+    }
+
+    return {
+      id: detailedMovie.id,
+      title: detailedMovie.title,
+      original_title: detailedMovie.original_title,
+      overview: detailedMovie.overview,
+      poster_path: detailedMovie.poster_path,
+      backdrop_path: detailedMovie.backdrop_path,
+      release_date: detailedMovie.release_date,
+      vote_average: detailedMovie.vote_average,
+      vote_count: detailedMovie.vote_count,
+      genre_ids: detailedMovie.genres.map(g => g.id),
+      genres: detailedMovie.genres,
+      popularity: detailedMovie.popularity,
+      adult: detailedMovie.adult,
+      original_language: detailedMovie.original_language,
+      runtime: detailedMovie.runtime,
+      tagline: detailedMovie.tagline,
+      imdb_id: detailedMovie.imdb_id,
+      status: detailedMovie.status,
+    };
+  } catch (error) {
+    console.error("Error fetching movie by ID:", error);
+    return null;
+  }
+}
+
 export async function getWatchProviders(movieId: number): Promise<WatchProviderResult | null> {
   try {
     const data = await fetchTMDB<TMDBWatchProvidersResponse>(`/movie/${movieId}/watch/providers`);
