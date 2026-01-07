@@ -63,7 +63,7 @@ export function Roulette({ filters, onMovieSelected }: RouletteProps) {
         onClick={handleSpin}
         isLoading={isLoading}
         disabled={isLoading}
-        className="text-lg px-12 py-6 rounded-full shadow-2xl shadow-rose-900/30 hover:shadow-rose-900/40 transition-shadow"
+        className="text-base sm:text-lg md:text-xl px-8 sm:px-12 py-4 sm:py-5 md:py-6 rounded-full shadow-2xl shadow-rose-900/30 hover:shadow-rose-900/40 transition-shadow w-full sm:w-auto"
       >
         {isLoading ? loadingMessage : "Sortear Filme"}
       </Button>
@@ -72,9 +72,9 @@ export function Roulette({ filters, onMovieSelected }: RouletteProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md text-center p-4 bg-rose-900/20 border border-rose-900/50 rounded-xl"
+          className="max-w-md text-center p-3 sm:p-4 bg-rose-900/20 border border-rose-900/50 rounded-lg sm:rounded-xl mx-4"
         >
-          <p className="text-rose-400 text-sm">{error}</p>
+          <p className="text-rose-400 text-xs sm:text-sm">{error}</p>
         </motion.div>
       )}
 
@@ -82,7 +82,7 @@ export function Roulette({ filters, onMovieSelected }: RouletteProps) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-zinc-500 text-sm text-center max-w-md"
+          className="text-zinc-500 text-xs sm:text-sm text-center max-w-md px-4"
         >
           Clique no botão para descobrir um filme aleatório baseado nas suas preferências
         </motion.p>

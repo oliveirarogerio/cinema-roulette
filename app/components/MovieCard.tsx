@@ -65,16 +65,16 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
   const imdbUrl = movie.imdb_id ? `https://www.imdb.com/title/${movie.imdb_id}` : null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-5xl">
-      <div className="flex flex-col md:flex-row gap-6 p-6">
+    <Modal isOpen={isOpen} onClose={onClose} className="sm:max-w-5xl">
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6 p-4 sm:p-6 pb-6">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex-shrink-0"
+          className="flex-shrink-0 w-full md:w-auto"
         >
           {posterUrl ? (
-            <div className="relative w-full md:w-80 aspect-[2/3] rounded-xl overflow-hidden bg-zinc-800">
+            <div className="relative w-full max-w-[280px] sm:max-w-xs md:w-80 aspect-[2/3] rounded-lg sm:rounded-xl overflow-hidden bg-zinc-800 mx-auto">
               <Image
                 src={posterUrl}
                 alt={movie.title}
@@ -95,23 +95,23 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex-1 flex flex-col gap-4"
+          className="flex-1 flex flex-col gap-3 sm:gap-4 w-full"
         >
-          <div>
-            <h2 className="text-3xl font-bold text-zinc-50 mb-2">
+          <div className="text-center md:text-left">
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-50 mb-2 leading-tight">
               {movie.title}
             </h2>
             {movie.original_title !== movie.title && (
-              <p className="text-zinc-400 text-sm mb-2">
+              <p className="text-zinc-400 text-xs sm:text-sm mb-2">
                 {movie.original_title}
               </p>
             )}
             {movie.tagline && (
-              <p className="text-rose-500 text-sm italic mb-3">
+              <p className="text-rose-500 text-xs sm:text-sm italic mb-2 sm:mb-3">
                 "{movie.tagline}"
               </p>
             )}
-            <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">
+            <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-zinc-400 flex-wrap">
               <span>{year}</span>
               {runtime && (
                 <>
@@ -121,7 +121,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
               )}
               <span className="text-zinc-700">•</span>
               <div className="flex items-center gap-1">
-                <StarIcon className="w-4 h-4 text-rose-600" />
+                <StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-600" />
                 <span className="text-zinc-50 font-medium">{rating}</span>
                 <span>/ 10</span>
               </div>
@@ -129,11 +129,11 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
           </div>
 
           {movie.genres && movie.genres.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center md:justify-start">
               {movie.genres.map((genre) => (
                 <span
                   key={genre.id}
-                  className="px-3 py-1 bg-zinc-800 text-zinc-300 text-xs rounded-full"
+                  className="px-2.5 sm:px-3 py-1 bg-zinc-800 text-zinc-300 text-xs rounded-full"
                 >
                   {genre.name}
                 </span>
@@ -141,14 +141,14 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
             </div>
           )}
 
-          <div>
-            <p className="text-zinc-300 leading-relaxed">
-              {movie.overview || "Sinopse não disponível."}
+          <div className="text-center md:text-left">
+            <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+              {truncatedSynopsis || "Sinopse não disponível."}
             </p>
             {!showFullSynopsis && truncatedSynopsis !== movie.overview && (
               <button
                 onClick={() => setShowFullSynopsis(true)}
-                className="text-rose-600 hover:text-rose-500 text-sm mt-2"
+                className="text-rose-600 hover:text-rose-500 text-xs sm:text-sm mt-2 font-medium"
               >
                 Ver mais
               </button>
@@ -156,13 +156,13 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
           </div>
 
           {watchProviders && watchProviders.flatrate && watchProviders.flatrate.length > 0 && (
-            <div>
-              <p className="text-sm text-zinc-400 mb-2">Disponível em:</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="text-center md:text-left">
+              <p className="text-xs sm:text-sm text-zinc-400 mb-2">Disponível em:</p>
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                 {watchProviders.flatrate.map((provider) => (
                   <div
                     key={provider.provider_id}
-                    className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800"
+                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-zinc-800"
                     title={provider.provider_name}
                   >
                     <Image
@@ -170,7 +170,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
                       alt={provider.provider_name}
                       fill
                       className="object-cover"
-                      sizes="48px"
+                      sizes="(max-width: 640px) 40px, 48px"
                     />
                   </div>
                 ))}
@@ -178,40 +178,43 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-auto pt-4">
+          <div className="flex flex-col gap-2 sm:gap-3 mt-auto pt-4 sm:pt-6">
             <Button
               variant="primary"
               onClick={handleReroll}
-              className="flex-1"
+              className="w-full text-base sm:text-lg py-3 sm:py-4"
             >
               Sortear Outro
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => window.open(trailerSearchUrl, "_blank")}
-              className="flex items-center justify-center gap-2"
-            >
-              <PlayIcon className="w-4 h-4" />
-              Trailer
-            </Button>
-            {imdbUrl && (
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => window.open(trailerSearchUrl, "_blank")}
+                className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
+              >
+                <PlayIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Trailer</span>
+                <span className="xs:hidden">Play</span>
+              </Button>
+              {imdbUrl && (
+                <Button
+                  variant="ghost"
+                  onClick={() => window.open(imdbUrl, "_blank")}
+                  className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
+                >
+                  <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  IMDb
+                </Button>
+              )}
               <Button
                 variant="ghost"
-                onClick={() => window.open(imdbUrl, "_blank")}
-                className="flex items-center justify-center gap-2"
+                onClick={() => window.open(tmdbUrl, "_blank")}
+                className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
               >
-                <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                IMDb
+                <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                TMDB
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              onClick={() => window.open(tmdbUrl, "_blank")}
-              className="flex items-center justify-center gap-2"
-            >
-              <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-              TMDB
-            </Button>
+            </div>
           </div>
         </motion.div>
       </div>
