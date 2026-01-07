@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cinema Roulette 🎬
 
-## Getting Started
+Uma aplicação web minimalista para descobrir filmes aleatórios. Deixe o destino escolher seu próximo filme!
 
-First, run the development server:
+## 🎯 Características
 
+- **Roleta de Filmes**: Descubra filmes aleatórios com um clique
+- **Filtros Opcionais**: Filtre por gênero e década
+- **Interface Minimalista**: Design dark mode com animações suaves
+- **Informações Completas**: Veja poster, sinopse, nota e onde assistir
+- **Responsivo**: Otimizado para mobile e desktop
+
+## 🚀 Tecnologias
+
+- **Next.js 16** - Framework React com App Router
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS 4** - Estilização utilitária
+- **Framer Motion** - Animações suaves
+- **Axios** - Cliente HTTP para requisições
+- **TMDB API** - Base de dados de filmes
+- **Heroicons** - Ícones minimalistas
+
+## 📋 Pré-requisitos
+
+- Node.js 18+ ou superior
+- pnpm (ou npm/yarn)
+- Chave de API do TMDB
+
+## 🔑 Obtendo API Key do TMDB
+
+1. Acesse [The Movie Database (TMDB)](https://www.themoviedb.org/)
+2. Crie uma conta gratuita
+3. Vá para Configurações → API
+4. Solicite uma API Key (é gratuito!)
+5. Copie sua API Key
+
+## 🛠️ Instalação
+
+1. Clone o repositório:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd cinema-roulette
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure as variáveis de ambiente:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Crie um arquivo `.env.local` na raiz do projeto:
+```bash
+TMDB_API_KEY=sua_api_key_aqui
+```
 
-## Learn More
+4. Execute o servidor de desenvolvimento:
+```bash
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Abra [http://localhost:3000](http://localhost:3000) no navegador
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Build para Produção
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm build
+pnpm start
+```
 
-## Deploy on Vercel
+## 🎨 Design
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+O projeto segue os princípios de design definidos no PRD:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Paleta de Cores**: Tema dark com destaque em rose-600
+- **Tipografia**: Geist Sans (padrão Next.js)
+- **UX**: Baseado nas Leis de Hick e Fitts
+- **Animações**: Framer Motion com foco em performance
+
+## 📁 Estrutura do Projeto
+
+```
+app/
+├── components/
+│   ├── ui/              # Componentes base
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── Modal.tsx
+│   │   └── Skeleton.tsx
+│   ├── FilterBar.tsx    # Filtros de gênero e ano
+│   ├── MovieCard.tsx    # Card do filme sorteado
+│   └── Roulette.tsx     # Botão principal e lógica
+├── lib/
+│   ├── tmdb.ts          # Cliente TMDB (Server Actions)
+│   ├── types.ts         # Tipos TypeScript
+│   ├── image-helpers.ts # Helpers para URLs de imagens
+│   └── utils.ts         # Utilitários
+├── layout.tsx           # Layout global
+├── page.tsx             # Página principal
+└── globals.css          # Estilos globais
+```
+
+## 🔒 Segurança
+
+- API Key protegida via Server Actions do Next.js
+- Nunca exposta ao cliente
+- Revalidação de cache configurada
+
+## 🌐 Deploy
+
+Recomendado: [Vercel](https://vercel.com)
+
+1. Conecte seu repositório
+2. Configure a variável de ambiente `TMDB_API_KEY`
+3. Deploy automático
+
+## 📝 Licença
+
+Este projeto foi criado como parte de um exercício de desenvolvimento.
+
+## 🙏 Créditos
+
+- Dados de filmes: [The Movie Database (TMDB)](https://www.themoviedb.org/)
+- Animações inspiradas em: [Aceternity UI](https://ui.aceternity.com/)
