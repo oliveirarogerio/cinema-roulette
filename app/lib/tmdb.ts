@@ -78,6 +78,7 @@ export async function getRandomMovie(filters: MovieFilters = {}): Promise<Movie 
 
     if (filters.minRating !== undefined && filters.minRating > 0) {
       params["vote_average.gte"] = filters.minRating.toString();
+      params["vote_count.gte"] = (filters.minVoteCount || 100).toString();
     }
 
     const initialResponse = await fetchTMDB<TMDBDiscoverResponse>("/discover/movie", {
@@ -109,12 +110,20 @@ export async function getRandomMovie(filters: MovieFilters = {}): Promise<Movie 
       return null;
     }
 
-    const maxAttempts = Math.min(validMovies.length, 20);
+    const maxAttempts = Math.min(validMovies.length, 50);
     let attempts = 0;
+    const triedMovieIds = new Set<number>();
 
     while (attempts < maxAttempts) {
       const randomIndex = Math.floor(Math.random() * validMovies.length);
       const movie = validMovies[randomIndex];
+
+      if (triedMovieIds.has(movie.id)) {
+        attempts++;
+        continue;
+      }
+
+      triedMovieIds.add(movie.id);
 
       const detailedMovie = await fetchTMDB<TMDBMovieResponse>(`/movie/${movie.id}`);
 

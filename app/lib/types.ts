@@ -43,6 +43,7 @@ export interface MovieFilters {
   startYear?: number;
   endYear?: number;
   minRating?: number;
+  minVoteCount?: number;
 }
 
 export interface TMDBGenreResponse {
