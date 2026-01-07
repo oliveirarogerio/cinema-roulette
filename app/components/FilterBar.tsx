@@ -27,6 +27,7 @@ export function FilterBar({ onFiltersChange }: FilterBarProps) {
   const [selectedDecade, setSelectedDecade] = useState<number>(0);
   const [customStartYear, setCustomStartYear] = useState<string>("");
   const [customEndYear, setCustomEndYear] = useState<string>("");
+  const [minRating, setMinRating] = useState<number>(0);
 
   useEffect(() => {
     async function loadGenres() {
@@ -48,9 +49,10 @@ export function FilterBar({ onFiltersChange }: FilterBarProps) {
       endYear: isCustomYear
         ? (customEndYear ? parseInt(customEndYear) : undefined)
         : decadeOption.value?.end,
+      minRating: minRating > 0 ? minRating : undefined,
     };
     onFiltersChange(filters);
-  }, [selectedGenres, selectedDecade, customStartYear, customEndYear, onFiltersChange]);
+  }, [selectedGenres, selectedDecade, customStartYear, customEndYear, minRating, onFiltersChange]);
 
   const toggleGenre = (genreId: number) => {
     setSelectedGenres((prev) =>
@@ -65,9 +67,10 @@ export function FilterBar({ onFiltersChange }: FilterBarProps) {
     setSelectedDecade(0);
     setCustomStartYear("");
     setCustomEndYear("");
+    setMinRating(0);
   };
 
-  const hasActiveFilters = selectedGenres.length > 0 || selectedDecade !== 0 || customStartYear !== "" || customEndYear !== "";
+  const hasActiveFilters = selectedGenres.length > 0 || selectedDecade !== 0 || customStartYear !== "" || customEndYear !== "" || minRating > 0;
   const isCustomYear = selectedDecade === DECADE_OPTIONS.length - 1;
 
   return (
@@ -82,7 +85,7 @@ export function FilterBar({ onFiltersChange }: FilterBarProps) {
         <span className="font-medium">Preferências</span>
         {hasActiveFilters && (
           <span className="px-2 py-0.5 bg-rose-600 text-zinc-50 text-xs rounded-full min-w-[20px] text-center">
-            {selectedGenres.length + (selectedDecade !== 0 ? 1 : 0) + (customStartYear !== "" || customEndYear !== "" ? 1 : 0)}
+            {selectedGenres.length + (selectedDecade !== 0 ? 1 : 0) + (customStartYear !== "" || customEndYear !== "" ? 1 : 0) + (minRating > 0 ? 1 : 0)}
           </span>
         )}
         <motion.div
@@ -199,6 +202,37 @@ export function FilterBar({ onFiltersChange }: FilterBarProps) {
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm sm:text-base font-medium text-zinc-50">
+                    Nota Mínima (TMDB)
+                  </label>
+                  {minRating > 0 && (
+                    <span className="text-xs sm:text-sm text-rose-600 font-medium">
+                      {minRating.toFixed(1)}/10
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="0.5"
+                    value={minRating}
+                    onChange={(e) => setMinRating(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                    style={{
+                      background: `linear-gradient(to right, rgb(225 29 72) 0%, rgb(225 29 72) ${(minRating / 10) * 100}%, rgb(39 39 42) ${(minRating / 10) * 100}%, rgb(39 39 42) 100%)`,
+                    }}
+                  />
+                  <div className="flex justify-between text-xs text-zinc-500">
+                    <span>Qualquer</span>
+                    <span>10.0</span>
+                  </div>
+                </div>
               </div>
 
               {hasActiveFilters && (

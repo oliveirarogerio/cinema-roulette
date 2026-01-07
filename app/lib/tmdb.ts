@@ -76,6 +76,10 @@ export async function getRandomMovie(filters: MovieFilters = {}): Promise<Movie 
       params["primary_release_date.lte"] = `${filters.endYear}-12-31`;
     }
 
+    if (filters.minRating !== undefined && filters.minRating > 0) {
+      params["vote_average.gte"] = filters.minRating.toString();
+    }
+
     const initialResponse = await fetchTMDB<TMDBDiscoverResponse>("/discover/movie", {
       ...params,
       page: "1",

@@ -37,12 +37,14 @@ Uma aplicação web minimalista para descobrir filmes aleatórios. Deixe o desti
 ## 🛠️ Instalação
 
 1. Clone o repositório:
+
 ```bash
 git clone <repository-url>
 cd cinema-roulette
 ```
 
 2. Instale as dependências:
+
 ```bash
 pnpm install
 ```
@@ -50,11 +52,13 @@ pnpm install
 3. Configure as variáveis de ambiente:
 
 Crie um arquivo `.env.local` na raiz do projeto:
+
 ```bash
 TMDB_API_KEY=sua_api_key_aqui
 ```
 
 4. Execute o servidor de desenvolvimento:
+
 ```bash
 pnpm dev
 ```

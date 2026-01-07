@@ -42,6 +42,7 @@ export interface MovieFilters {
   genreIds?: number[];
   startYear?: number;
   endYear?: number;
+  minRating?: number;
 }
 
 export interface TMDBGenreResponse {
@@ -81,4 +82,3 @@ export interface TMDBWatchProvidersResponse {
     [countryCode: string]: WatchProviderResult;
   };
 }
-
