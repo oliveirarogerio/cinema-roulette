@@ -101,19 +101,38 @@ export async function getRandomMovie(filters: MovieFilters = {}): Promise<Movie 
       return null;
     }
 
-    const randomIndex = Math.floor(Math.random() * randomPageResponse.results.length);
-    const movie = randomPageResponse.results[randomIndex];
+    const validMovies = randomPageResponse.results.filter(
+      (m) => m.poster_path && m.overview && m.overview.trim().length > 0
+    );
 
-    const detailedMovie = await fetchTMDB<TMDBMovieResponse>(`/movie/${movie.id}`);
+    if (validMovies.length === 0) {
+      return null;
+    }
 
-    return {
-      ...movie,
-      genres: detailedMovie.genres,
-      runtime: detailedMovie.runtime,
-      tagline: detailedMovie.tagline,
-      imdb_id: detailedMovie.imdb_id,
-      status: detailedMovie.status,
-    };
+    const maxAttempts = Math.min(validMovies.length, 20);
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      const randomIndex = Math.floor(Math.random() * validMovies.length);
+      const movie = validMovies[randomIndex];
+
+      const detailedMovie = await fetchTMDB<TMDBMovieResponse>(`/movie/${movie.id}`);
+
+      if (detailedMovie.imdb_id && detailedMovie.poster_path && detailedMovie.overview && detailedMovie.overview.trim().length > 0) {
+        return {
+          ...movie,
+          genres: detailedMovie.genres,
+          runtime: detailedMovie.runtime,
+          tagline: detailedMovie.tagline,
+          imdb_id: detailedMovie.imdb_id,
+          status: detailedMovie.status,
+        };
+      }
+
+      attempts++;
+    }
+
+    return null;
   } catch (error) {
     console.error("Error fetching random movie:", error);
     return null;

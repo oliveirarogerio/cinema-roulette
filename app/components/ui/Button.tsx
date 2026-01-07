@@ -5,7 +5,7 @@ import { cn } from "@/app/lib/utils";
 import { forwardRef } from "react";
 
 interface ButtonProps {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "link";
   isLoading?: boolean;
   disabled?: boolean;
   className?: string;
@@ -22,6 +22,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: "bg-rose-600 text-zinc-50 hover:bg-rose-700 shadow-lg shadow-rose-900/20",
       secondary: "bg-zinc-800 text-zinc-50 hover:bg-zinc-700 border border-zinc-700",
       ghost: "bg-transparent text-zinc-400 hover:text-zinc-50 hover:bg-zinc-900",
+      link: "bg-zinc-800/80 text-zinc-200 hover:bg-zinc-700 hover:text-zinc-50 border border-zinc-700/50 hover:border-zinc-600",
     };
 
     return (

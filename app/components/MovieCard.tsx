@@ -15,20 +15,38 @@ interface MovieCardProps {
   isOpen: boolean;
   onClose: () => void;
   onReroll: () => void;
+  onSortAgain: () => void;
 }
 
-export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) {
+export function MovieCard({ movie, isOpen, onClose, onReroll, onSortAgain }: MovieCardProps) {
   const [watchProviders, setWatchProviders] = useState<WatchProviderResult | null>(null);
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
 
   useEffect(() => {
     if (movie) {
       setShowFullSynopsis(false);
+      setIsSorting(false);
       getWatchProviders(movie.id).then(setWatchProviders);
     }
   }, [movie]);
 
-  if (!movie) return null;
+  if (!movie || isSorting) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} className="sm:max-w-5xl">
+        <div className="flex items-center justify-center p-12">
+          <div className="text-center">
+            <motion.div
+              className="w-16 h-16 border-4 border-rose-600 border-t-transparent rounded-full mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <p className="text-zinc-400 text-sm">Buscando novo filme...</p>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   const posterUrl = getPosterUrl(movie.poster_path, "w500");
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : "N/A";
@@ -50,11 +68,11 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
     ? movie.overview.slice(0, 200) + "..."
     : movie.overview;
 
-  const handleReroll = () => {
-    onClose();
-    setTimeout(() => {
-      onReroll();
-    }, 300);
+  const handleReroll = async () => {
+    setIsSorting(true);
+    onReroll();
+    await onSortAgain();
+    setIsSorting(false);
   };
 
   const trailerSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
@@ -186,7 +204,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
             >
               Sortear Outro
             </Button>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={`grid gap-2 ${imdbUrl ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <Button
                 variant="secondary"
                 onClick={() => window.open(trailerSearchUrl, "_blank")}
@@ -198,7 +216,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
               </Button>
               {imdbUrl && (
                 <Button
-                  variant="ghost"
+                  variant="link"
                   onClick={() => window.open(imdbUrl, "_blank")}
                   className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
                 >
@@ -207,7 +225,7 @@ export function MovieCard({ movie, isOpen, onClose, onReroll }: MovieCardProps) 
                 </Button>
               )}
               <Button
-                variant="ghost"
+                variant="link"
                 onClick={() => window.open(tmdbUrl, "_blank")}
                 className="flex items-center justify-center gap-1.5 text-sm sm:text-base py-2.5 sm:py-3"
               >

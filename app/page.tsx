@@ -11,6 +11,7 @@ export default function Home() {
   const [filters, setFilters] = useState<MovieFilters>({});
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rerollTrigger, setRerollTrigger] = useState(0);
 
   const handleMovieSelected = (movie: Movie) => {
     setSelectedMovie(movie);
@@ -23,6 +24,19 @@ export default function Home() {
 
   const handleReroll = () => {
     setSelectedMovie(null);
+  };
+
+  const handleSortAgain = async () => {
+    const { getRandomMovie } = await import("@/app/lib/tmdb");
+    try {
+      const movie = await getRandomMovie(filters);
+      if (movie) {
+        setSelectedMovie(movie);
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error sorting again:", error);
+    }
   };
 
   return (
@@ -95,6 +109,7 @@ export default function Home() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onReroll={handleReroll}
+        onSortAgain={handleSortAgain}
       />
     </div>
   );
