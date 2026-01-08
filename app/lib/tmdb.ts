@@ -197,4 +197,19 @@ export async function getWatchProviders(movieId: number): Promise<WatchProviderR
   }
 }
 
+export async function getMovieEnglishTitle(movieId: number): Promise<string | null> {
+  "use server";
+
+  try {
+    const movieDetails = await fetchTMDB<TMDBMovieResponse>(`/movie/${movieId}`, {
+      language: "en-US",
+    });
+
+    return movieDetails.title;
+  } catch (error) {
+    console.error("Error fetching movie English title:", error);
+    return null;
+  }
+}
+
 

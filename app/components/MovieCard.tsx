@@ -4,9 +4,11 @@ import { WatchlistButton } from '@/app/components/WatchlistButton';
 import { Button } from '@/app/components/ui/Button';
 import { Modal } from '@/app/components/ui/Modal';
 import { getPosterUrl, getProviderLogoUrl } from '@/app/lib/image-helpers';
-import { getWatchProviders } from '@/app/lib/tmdb';
+import { searchMovieTorrent } from '@/app/lib/pirate';
+import { getMovieEnglishTitle, getWatchProviders } from '@/app/lib/tmdb';
 import { Movie, WatchProviderResult } from '@/app/lib/types';
 import {
+  ArrowDownTrayIcon,
   ArrowTopRightOnSquareIcon,
   PlayIcon,
   ShareIcon,
@@ -14,6 +16,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface MovieCardProps {
@@ -36,6 +39,24 @@ export function MovieCard({
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
   const [showShareFeedback, setShowShareFeedback] = useState(false);
+  const [torrents, setTorrents] = useState<
+    Array<{
+      torrent: {
+        name: string;
+        seeders: number;
+        leechers: number;
+        size: string;
+      };
+      magnetLink: string;
+    }>
+  >([]);
+  const [isLoadingMagnet, setIsLoadingMagnet] = useState(false);
+  const [copiedMagnetIndex, setCopiedMagnetIndex] = useState<number | null>(
+    null,
+  );
+
+  const searchParams = useSearchParams();
+  const isJuicerMode = searchParams.get('juicer') !== null;
 
   useEffect(() => {
     if (movie) {
@@ -44,6 +65,35 @@ export function MovieCard({
       setWatchProviders(null);
     }
   }, [movie]);
+
+  useEffect(() => {
+    if (movie && isJuicerMode) {
+      setIsLoadingMagnet(true);
+      setTorrents([]);
+
+      const year = movie.release_date
+        ? new Date(movie.release_date).getFullYear().toString()
+        : undefined;
+
+      getMovieEnglishTitle(movie.id)
+        .then((englishTitle) => {
+          const searchTitle = englishTitle || movie.original_title;
+          return searchMovieTorrent(searchTitle, year);
+        })
+        .then((results) => {
+          setTorrents(results);
+        })
+        .catch((error) => {
+          console.error('Error searching torrent:', error);
+        })
+        .finally(() => {
+          setIsLoadingMagnet(false);
+        });
+    } else {
+      setTorrents([]);
+      setIsLoadingMagnet(false);
+    }
+  }, [movie, isJuicerMode]);
 
   useEffect(() => {
     setShowFullSynopsis(false);
@@ -109,6 +159,22 @@ export function MovieCard({
     } catch (error) {
       console.error('Error copying to clipboard:', error);
     }
+  };
+
+  const handleMagnetClick = async (magnetLink: string, index: number) => {
+    if (!magnetLink) return;
+
+    try {
+      await navigator.clipboard.writeText(magnetLink);
+      setCopiedMagnetIndex(index);
+      setTimeout(() => setCopiedMagnetIndex(null), 2500);
+    } catch (error) {
+      console.error('Error copying magnet link:', error);
+    }
+  };
+
+  const formatSize = (size: string) => {
+    return size;
   };
 
   const trailerSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
@@ -239,6 +305,108 @@ export function MovieCard({
             )}
 
           <div className="flex flex-col gap-3 sm:gap-4 mt-auto pt-4 sm:pt-6">
+            {isJuicerMode && (
+              <div className="border border-zinc-700 rounded-lg p-3 sm:p-4 bg-zinc-900/50">
+                <h3 className="text-sm font-semibold text-zinc-50 mb-3 flex items-center gap-2">
+                  <ArrowDownTrayIcon className="w-4 h-4 text-rose-500" />
+                  Torrents Disponíveis
+                </h3>
+
+                {isLoadingMagnet ? (
+                  <div className="flex items-center justify-center py-8">
+                    <motion.div
+                      className="w-8 h-8 border-2 border-rose-600 border-t-transparent rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    />
+                  </div>
+                ) : torrents.length > 0 ? (
+                  <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+                    {torrents.map((item, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="relative bg-zinc-800/50 hover:bg-zinc-800 rounded-lg p-3 border border-zinc-700/50 hover:border-zinc-600 transition-all"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <p className="text-xs sm:text-sm text-zinc-300 font-medium line-clamp-2">
+                            {item.torrent.name}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-zinc-400">
+                            <span className="flex items-center gap-1">
+                              <span className="text-green-500">↑</span>
+                              {item.torrent.seeders}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="text-red-500">↓</span>
+                              {item.torrent.leechers}
+                            </span>
+                            <span>{formatSize(item.torrent.size)}</span>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <motion.div
+                            whileTap={{ scale: 0.95 }}
+                            animate={
+                              copiedMagnetIndex === index
+                                ? { scale: [1, 1.05, 1] }
+                                : {}
+                            }
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Button
+                              variant="primary"
+                              onClick={() =>
+                                handleMagnetClick(item.magnetLink, index)
+                              }
+                              className="w-full text-xs sm:text-sm py-2 flex items-center justify-center gap-1.5"
+                            >
+                              {copiedMagnetIndex === index ? (
+                                <>
+                                  <svg
+                                    className="w-3.5 h-3.5 text-green-500"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  <span>Copiado!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+                                  <span>Copiar Magnet</span>
+                                </>
+                              )}
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-zinc-400 text-sm">
+                    <p>Nenhum torrent encontrado</p>
+                    <p className="text-xs mt-1">
+                      Tente buscar manualmente: {movie?.original_title}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <Button
                 variant="primary"

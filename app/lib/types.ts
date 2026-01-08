@@ -83,3 +83,13 @@ export interface TMDBWatchProvidersResponse {
     [countryCode: string]: WatchProviderResult;
   };
 }
+
+export interface TorrentResult {
+  title: string;
+  torrentLink: string;
+  size: string;
+  seeders: string;
+  leechers: string;
+}
+
+export interface PirateAPIResponse extends Array<TorrentResult> {}
